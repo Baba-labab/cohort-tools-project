@@ -6,6 +6,8 @@ const cors = require("cors")
 const mongoose = require("mongoose")
 const Student = require("./models/Student.model.js")
 const Cohort = require("./models/Cohort.model.js")
+const { errorHandler, notFoundHandler } = require("./error-handling/index.js")
+const { isAuthenticated } = require("./middleware/jwt.middleware.js")
 
 mongoose
 .connect('mongodb://127.0.0.1:27017/cohorts-tools-api')
@@ -30,6 +32,7 @@ app.use(morgan("dev"));
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(errorHandler);
 
 
 // ROUTES - https://expressjs.com/en/starter/basic-routing.html
@@ -95,81 +98,16 @@ app.delete("/api/cohorts/:cohortId", (req, res) => {
 })
 
 
-//STUDENTS
-app.get("/api/students", (req, res) => {
-   Student.find({})
-  .then(students => {
-    console.log("Retrieved students:", students)
-     res.status(200).json(students);
-  })
-  .catch(error => {
-    console.error("Error while retrieving students data", error)
-    res.status(500).json({ error: "Failed to retrieve students data"})
-  })
-});
 
-app.post("/api/students", (req, res) => {
-   Student.create(req.body)
-  .then(createdStudent => {
-    console.log("Retrieved students:", createdStudent)
-     res.status(200).json(createdStudent);
-  })
-  .catch(error => {
-    console.error("Error while creating student", error)
-    res.status(500).json({ error: "Failed to create student"})
-  })
-});
 
-//Get all students of a given cohort
-app.get("/api/students/cohort/:cohortId", (req, res) => {
-   Student.find({ cohort: req.params.cohortId })
-   .populate("cohort")
-  .then(students => {
-    console.log("Retrieved students:", students)
-     res.status(200).json(students);
-  })
-  .catch(error => {
-    console.error("Error while retrieving students of cohort.", error)
-    res.status(500).json({ error: "Failed to retrieve students of cohort."})
-  })
-});
+const studentsRouter = require('./routes/students.routes.js')
+app.use("/api/students", studentsRouter)
 
-//Get specific student by Id
-app.get("/api/students/:studentId", (req, res) => {
-   Student.findById(req.params.studentId)
-  .then(student => {
-    console.log("Retrieved student:", student)
-     res.status(200).json(student);
-  })
-  .catch(error => {
-    console.error("Error while retrieving students data", error)
-    res.status(500).json({ error: "Failed to retrieve students data"})
-  })
-});
+const authRouter = require("./routes/auth.routes");
+app.use("/auth", authRouter)
 
-app.put("/api/students/:studentId", (req, res) => {
-  Student.findByIdAndUpdate(req.params.studentId, req.body, { new: true })
-  .then(updatedStudent => {
-    console.log("Updated student", updatedStudent)
-    res.status(200).json(updatedStudent)
-  })
-  .catch(error => {
-    console.error("Error updating student", error)
-    res.status(500).json( { error: "Error updating student."})
-  })
-})
+app.use(notFoundHandler);
 
-app.delete("api/students/:studentId", (req, res) => {
- Student.findByIdAndDelete(req.params.studentId)
-  .then(result => {
-    console.log("Student deleted")
-    res.status(204).send();
-  })
-  .catch(error => {
-    console.error("Error deleting student", error)
-    res.status(500).json( {error: "Error deleting studet"})
-  })
-})
 
 // START SERVER
 app.listen(PORT, () => {
