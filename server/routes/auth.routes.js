@@ -64,7 +64,7 @@ router.post("/login", (req, res, next) => {
   .then((foundUser) => {
 
     if(!foundUser) {
-        
+        res.status(400).json({ message: "User not found!" })
         return;
     }
     const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
@@ -88,10 +88,12 @@ router.post("/login", (req, res, next) => {
 })
 
 //GET /auth/verify
-router.get("verify", isAuthenticated, (req, res, next) => {
+router.get("/verify", isAuthenticated, (req, res, next) => {
+  //console for development only - remove it in production
     console.log(`req.payload`, req.payload)
 
     res.status(200).json(req.payload)
 })
+
 
 module.exports = router; 

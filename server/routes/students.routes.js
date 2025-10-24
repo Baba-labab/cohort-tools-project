@@ -1,11 +1,12 @@
 const express = require('express')
 const router = express.Router()
 
-const Student = require('../models/Student.model')
+const Student = require('../models/Student.model');
+const { isAuthenticated } = require('../middleware/jwt.middleware');
 
 
 //STUDENTS
-router.get("/", (req, res) => {
+router.get("/",  (req, res) => {
    Student.find({})
   .then(students => {
     console.log("Retrieved students:", students)
@@ -17,7 +18,7 @@ router.get("/", (req, res) => {
   })
 });
 
-router.post("/", (req, res) => {
+router.post("/",  (req, res) => {
    Student.create(req.body)
   .then(createdStudent => {
     console.log("Created student:", createdStudent)
@@ -30,7 +31,7 @@ router.post("/", (req, res) => {
 });
 
 //Get all students of a given cohort
-router.get("/cohort/:cohortId", (req, res) => {
+router.get("/cohort/:cohortId",  (req, res) => {
    Student.find({ cohort: req.params.cohortId })
    .populate("cohort")
   .then(students => {
@@ -44,7 +45,7 @@ router.get("/cohort/:cohortId", (req, res) => {
 });
 
 //Get specific student by Id
-router.get("/:studentId", (req, res) => {
+router.get("/:studentId",  (req, res) => {
    Student.findById(req.params.studentId)
   .then(student => {
     console.log("Retrieved student:", student)
@@ -56,7 +57,7 @@ router.get("/:studentId", (req, res) => {
   })
 });
 
-router.put("/:studentId", (req, res) => {
+router.put("/:studentId",  (req, res) => {
   Student.findByIdAndUpdate(req.params.studentId, req.body, { new: true })
   .then(updatedStudent => {
     console.log("Updated student", updatedStudent)
@@ -68,7 +69,7 @@ router.put("/:studentId", (req, res) => {
   })
 })
 
-router.delete("/:studentId", (req, res) => {
+router.delete("/:studentId",  (req, res) => {
  Student.findByIdAndDelete(req.params.studentId)
   .then(result => {
     console.log("Student deleted")
